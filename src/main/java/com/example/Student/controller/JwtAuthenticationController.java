@@ -5,6 +5,7 @@ import java.util.Objects;
 import com.example.Student.config.JwtTokenUtil;
 import com.example.Student.modal.JwtRequest;
 import com.example.Student.modal.JwtResponse;
+import com.example.Student.modal.UserDTO;
 import com.example.Student.service.JwtUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class JwtAuthenticationController {
     private JwtTokenUtil jwtTokenUtil;
 
     @Autowired
-    private JwtUserDetailsService jwtInMemoryUserDetailsService;
+    private JwtUserDetailsService jwtUserDetailsService;
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
     public ResponseEntity<?> generateAuthenticationToken(@RequestBody JwtRequest authenticationRequest)
@@ -39,14 +40,17 @@ public class JwtAuthenticationController {
 
         authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
 
-        final UserDetails userDetails = jwtInMemoryUserDetailsService
+        final UserDetails userDetails = jwtUserDetailsService
                 .loadUserByUsername(authenticationRequest.getUsername());
 
         final String token = jwtTokenUtil.generateToken(userDetails);
 
         return ResponseEntity.ok(new JwtResponse(token));
     }
-
+    @RequestMapping(value = "/register", method = RequestMethod.POST)
+    public ResponseEntity<?> saveUser(@RequestBody UserDTO user) throws Exception {
+        return ResponseEntity.ok(jwtUserDetailsService.save(user));
+    }
     private void authenticate(String username, String password) throws Exception {
         Objects.requireNonNull(username);
         Objects.requireNonNull(password);
